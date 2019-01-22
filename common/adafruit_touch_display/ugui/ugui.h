@@ -362,30 +362,10 @@ typedef struct
    UG_U8 align;
    UG_S8 h_space;
    UG_S8 v_space;
+   UG_U16 id;
+   UG_WINDOW *my_window;
    char* str;
 }UG_BUTTON;
-
-/* Default button IDs */
-#define BTN_ID_0                                      OBJ_ID_0
-#define BTN_ID_1                                      OBJ_ID_1
-#define BTN_ID_2                                      OBJ_ID_2
-#define BTN_ID_3                                      OBJ_ID_3
-#define BTN_ID_4                                      OBJ_ID_4
-#define BTN_ID_5                                      OBJ_ID_5
-#define BTN_ID_6                                      OBJ_ID_6
-#define BTN_ID_7                                      OBJ_ID_7
-#define BTN_ID_8                                      OBJ_ID_8
-#define BTN_ID_9                                      OBJ_ID_9
-#define BTN_ID_10                                     OBJ_ID_10
-#define BTN_ID_11                                     OBJ_ID_11
-#define BTN_ID_12                                     OBJ_ID_12
-#define BTN_ID_13                                     OBJ_ID_13
-#define BTN_ID_14                                     OBJ_ID_14
-#define BTN_ID_15                                     OBJ_ID_15
-#define BTN_ID_16                                     OBJ_ID_16
-#define BTN_ID_17                                     OBJ_ID_17
-#define BTN_ID_18                                     OBJ_ID_18
-#define BTN_ID_19                                     OBJ_ID_19
 
 /* Button states */
 #define BTN_STATE_RELEASED                            (0<<0)
@@ -476,29 +456,10 @@ typedef struct
    UG_U8 align;
    UG_S8 h_space;
    UG_S8 v_space;
+   UG_U16 id;
+   UG_WINDOW *my_window;
 } UG_TEXTBOX;
 
-/* Default textbox IDs */
-#define TXB_ID_0                                      OBJ_ID_0
-#define TXB_ID_1                                      OBJ_ID_1
-#define TXB_ID_2                                      OBJ_ID_2
-#define TXB_ID_3                                      OBJ_ID_3
-#define TXB_ID_4                                      OBJ_ID_4
-#define TXB_ID_5                                      OBJ_ID_5
-#define TXB_ID_6                                      OBJ_ID_6
-#define TXB_ID_7                                      OBJ_ID_7
-#define TXB_ID_8                                      OBJ_ID_8
-#define TXB_ID_9                                      OBJ_ID_9
-#define TXB_ID_10                                     OBJ_ID_10
-#define TXB_ID_11                                     OBJ_ID_11
-#define TXB_ID_12                                     OBJ_ID_12
-#define TXB_ID_13                                     OBJ_ID_13
-#define TXB_ID_14                                     OBJ_ID_14
-#define TXB_ID_15                                     OBJ_ID_15
-#define TXB_ID_16                                     OBJ_ID_16
-#define TXB_ID_17                                     OBJ_ID_17
-#define TXB_ID_18                                     OBJ_ID_18
-#define TXB_ID_19                                     OBJ_ID_19
 
 /* -------------------------------------------------------------------------------- */
 /* -- IMAGE OBJECT                                                               -- */
@@ -508,29 +469,10 @@ typedef struct
 {
    void* img;
    UG_U8 type;
+   UG_U16 id;
+   UG_WINDOW *my_window;
 } UG_IMAGE;
 
-/* Default image IDs */
-#define IMG_ID_0                                      OBJ_ID_0
-#define IMG_ID_1                                      OBJ_ID_1
-#define IMG_ID_2                                      OBJ_ID_2
-#define IMG_ID_3                                      OBJ_ID_3
-#define IMG_ID_4                                      OBJ_ID_4
-#define IMG_ID_5                                      OBJ_ID_5
-#define IMG_ID_6                                      OBJ_ID_6
-#define IMG_ID_7                                      OBJ_ID_7
-#define IMG_ID_8                                      OBJ_ID_8
-#define IMG_ID_9                                      OBJ_ID_9
-#define IMG_ID_10                                     OBJ_ID_10
-#define IMG_ID_11                                     OBJ_ID_11
-#define IMG_ID_12                                     OBJ_ID_12
-#define IMG_ID_13                                     OBJ_ID_13
-#define IMG_ID_14                                     OBJ_ID_14
-#define IMG_ID_15                                     OBJ_ID_15
-#define IMG_ID_16                                     OBJ_ID_16
-#define IMG_ID_17                                     OBJ_ID_17
-#define IMG_ID_18                                     OBJ_ID_18
-#define IMG_ID_19                                     OBJ_ID_19
 
 /* Image types */
 #define IMG_TYPE_BMP                                  (1<<0)
@@ -973,30 +915,30 @@ UG_S16 UG_WindowGetInnerHeight( UG_WINDOW* wnd );
 UG_S16 UG_WindowGetOuterHeight( UG_WINDOW* wnd );
 
 /* Button functions */
-UG_RESULT UG_ButtonCreate( UG_WINDOW* wnd, UG_BUTTON* btn, UG_U8 id, UG_S16 xs, UG_S16 ys, UG_S16 xe, UG_S16 ye );
-UG_RESULT UG_ButtonDelete( UG_WINDOW* wnd, UG_U8 id );
-UG_RESULT UG_ButtonShow( UG_WINDOW* wnd, UG_U8 id );
-UG_RESULT UG_ButtonHide( UG_WINDOW* wnd, UG_U8 id );
-UG_RESULT UG_ButtonSetForeColor( UG_WINDOW* wnd, UG_U8 id, UG_COLOR fc );
-UG_RESULT UG_ButtonSetBackColor( UG_WINDOW* wnd, UG_U8 id, UG_COLOR bc );
-UG_RESULT UG_ButtonSetAlternateForeColor( UG_WINDOW* wnd, UG_U8 id, UG_COLOR afc );
-UG_RESULT UG_ButtonSetAlternateBackColor( UG_WINDOW* wnd, UG_U8 id, UG_COLOR abc );
-UG_RESULT UG_ButtonSetText( UG_WINDOW* wnd, UG_U8 id, char* str );
-UG_RESULT UG_ButtonSetFont( UG_WINDOW* wnd, UG_U8 id, const UG_FONT* font );
-UG_RESULT UG_ButtonSetStyle( UG_WINDOW* wnd, UG_U8 id, UG_U8 style );
-UG_RESULT UG_ButtonSetHSpace( UG_WINDOW* wnd, UG_U8 id, UG_S8 hs );
-UG_RESULT UG_ButtonSetVSpace( UG_WINDOW* wnd, UG_U8 id, UG_S8 vs );
-UG_RESULT UG_ButtonSetAlignment( UG_WINDOW* wnd, UG_U8 id, UG_U8 align );
-UG_COLOR UG_ButtonGetForeColor( UG_WINDOW* wnd, UG_U8 id );
-UG_COLOR UG_ButtonGetBackColor( UG_WINDOW* wnd, UG_U8 id );
-UG_COLOR UG_ButtonGetAlternateForeColor( UG_WINDOW* wnd, UG_U8 id );
-UG_COLOR UG_ButtonGetAlternateBackColor( UG_WINDOW* wnd, UG_U8 id );
-char* UG_ButtonGetText( UG_WINDOW* wnd, UG_U8 id );
-UG_FONT* UG_ButtonGetFont( UG_WINDOW* wnd, UG_U8 id );
-UG_U8 UG_ButtonGetStyle( UG_WINDOW* wnd, UG_U8 id );
-UG_S8 UG_ButtonGetHSpace( UG_WINDOW* wnd, UG_U8 id );
-UG_S8 UG_ButtonGetVSpace( UG_WINDOW* wnd, UG_U8 id );
-UG_U8 UG_ButtonGetAlignment( UG_WINDOW* wnd, UG_U8 id );
+UG_RESULT UG_ButtonCreate(UG_BUTTON* btn, UG_WINDOW* wnd, UG_S16 xs, UG_S16 ys, UG_S16 xe, UG_S16 ye );
+UG_RESULT UG_ButtonDelete(UG_BUTTON *btn);
+UG_RESULT UG_ButtonShow(UG_BUTTON *btn);
+UG_RESULT UG_ButtonHide(UG_BUTTON *btn);
+UG_RESULT UG_ButtonSetForeColor(UG_BUTTON *btn, UG_COLOR fc );
+UG_RESULT UG_ButtonSetBackColor(UG_BUTTON *btn, UG_COLOR bc );
+UG_RESULT UG_ButtonSetAlternateForeColor(UG_BUTTON *btn, UG_COLOR afc );
+UG_RESULT UG_ButtonSetAlternateBackColor(UG_BUTTON *btn, UG_COLOR abc );
+UG_RESULT UG_ButtonSetText(UG_BUTTON *btn, char* str );
+UG_RESULT UG_ButtonSetFont(UG_BUTTON *btn, const UG_FONT* font );
+UG_RESULT UG_ButtonSetStyle(UG_BUTTON *btn, UG_U8 style );
+UG_RESULT UG_ButtonSetHSpace(UG_BUTTON *btn, UG_S8 hs );
+UG_RESULT UG_ButtonSetVSpace(UG_BUTTON *btn, UG_S8 vs );
+UG_RESULT UG_ButtonSetAlignment(UG_BUTTON *btn, UG_U8 align );
+UG_COLOR UG_ButtonGetForeColor(UG_BUTTON *btn);
+UG_COLOR UG_ButtonGetBackColor(UG_BUTTON *btn);
+UG_COLOR UG_ButtonGetAlternateForeColor(UG_BUTTON *btn);
+UG_COLOR UG_ButtonGetAlternateBackColor(UG_BUTTON *btn);
+char* UG_ButtonGetText(UG_BUTTON *btn);
+UG_FONT* UG_ButtonGetFont(UG_BUTTON *btn);
+UG_U8 UG_ButtonGetStyle(UG_BUTTON *btn);
+UG_S8 UG_ButtonGetHSpace(UG_BUTTON *btn);
+UG_S8 UG_ButtonGetVSpace(UG_BUTTON *btn);
+UG_U8 UG_ButtonGetAlignment(UG_BUTTON *btn);
 
 /* Checkbox functions */
 UG_RESULT UG_CheckboxCreate( UG_WINDOW* wnd, UG_CHECKBOX* btn, UG_U8 id, UG_S16 xs, UG_S16 ys, UG_S16 xe, UG_S16 ye );
@@ -1027,31 +969,31 @@ UG_S8 UG_CheckboxGetVSpace( UG_WINDOW* wnd, UG_U8 id );
 UG_U8 UG_CheckboxGetAlignment( UG_WINDOW* wnd, UG_U8 id );
 
 /* Textbox functions */
-UG_RESULT UG_TextboxCreate( UG_WINDOW* wnd, UG_TEXTBOX* txb, UG_U8 id, UG_S16 xs, UG_S16 ys, UG_S16 xe, UG_S16 ye );
-UG_RESULT UG_TextboxDelete( UG_WINDOW* wnd, UG_U8 id );
-UG_RESULT UG_TextboxShow( UG_WINDOW* wnd, UG_U8 id );
-UG_RESULT UG_TextboxHide( UG_WINDOW* wnd, UG_U8 id );
-UG_RESULT UG_TextboxSetForeColor( UG_WINDOW* wnd, UG_U8 id, UG_COLOR fc );
-UG_RESULT UG_TextboxSetBackColor( UG_WINDOW* wnd, UG_U8 id, UG_COLOR bc );
-UG_RESULT UG_TextboxSetText( UG_WINDOW* wnd, UG_U8 id, char* str );
-UG_RESULT UG_TextboxSetFont( UG_WINDOW* wnd, UG_U8 id, const UG_FONT* font );
-UG_RESULT UG_TextboxSetHSpace( UG_WINDOW* wnd, UG_U8 id, UG_S8 hs );
-UG_RESULT UG_TextboxSetVSpace( UG_WINDOW* wnd, UG_U8 id, UG_S8 vs );
-UG_RESULT UG_TextboxSetAlignment( UG_WINDOW* wnd, UG_U8 id, UG_U8 align );
-UG_COLOR UG_TextboxGetForeColor( UG_WINDOW* wnd, UG_U8 id );
-UG_COLOR UG_TextboxGetBackColor( UG_WINDOW* wnd, UG_U8 id );
-char* UG_TextboxGetText( UG_WINDOW* wnd, UG_U8 id );
-UG_FONT* UG_TextboxGetFont( UG_WINDOW* wnd, UG_U8 id );
-UG_S8 UG_TextboxGetHSpace( UG_WINDOW* wnd, UG_U8 id );
-UG_S8 UG_TextboxGetVSpace( UG_WINDOW* wnd, UG_U8 id );
-UG_U8 UG_TextboxGetAlignment( UG_WINDOW* wnd, UG_U8 id );
+UG_RESULT UG_TextboxCreate(UG_TEXTBOX* txb, UG_WINDOW* wnd, UG_S16 xs, UG_S16 ys, UG_S16 xe, UG_S16 ye );
+UG_RESULT UG_TextboxDelete(UG_TEXTBOX *txb);
+UG_RESULT UG_TextboxShow(UG_TEXTBOX *txb);
+UG_RESULT UG_TextboxHide(UG_TEXTBOX *txb);
+UG_RESULT UG_TextboxSetForeColor(UG_TEXTBOX *txb, UG_COLOR fc );
+UG_RESULT UG_TextboxSetBackColor(UG_TEXTBOX *txb, UG_COLOR bc );
+UG_RESULT UG_TextboxSetText(UG_TEXTBOX *txb, char* str );
+UG_RESULT UG_TextboxSetFont(UG_TEXTBOX *txb, const UG_FONT* font );
+UG_RESULT UG_TextboxSetHSpace(UG_TEXTBOX *txb, UG_S8 hs );
+UG_RESULT UG_TextboxSetVSpace(UG_TEXTBOX *txb, UG_S8 vs );
+UG_RESULT UG_TextboxSetAlignment(UG_TEXTBOX *txb, UG_U8 align );
+UG_COLOR UG_TextboxGetForeColor(UG_TEXTBOX *txb);
+UG_COLOR UG_TextboxGetBackColor(UG_TEXTBOX *txb);
+char* UG_TextboxGetText(UG_TEXTBOX *txb);
+UG_FONT* UG_TextboxGetFont(UG_TEXTBOX *txb);
+UG_S8 UG_TextboxGetHSpace(UG_TEXTBOX *txb);
+UG_S8 UG_TextboxGetVSpace(UG_TEXTBOX *txb);
+UG_U8 UG_TextboxGetAlignment(UG_TEXTBOX *txb);
 
 /* Image functions */
-UG_RESULT UG_ImageCreate( UG_WINDOW* wnd, UG_IMAGE* img, UG_U8 id, UG_S16 xs, UG_S16 ys, UG_S16 xe, UG_S16 ye );
-UG_RESULT UG_ImageDelete( UG_WINDOW* wnd, UG_U8 id );
-UG_RESULT UG_ImageShow( UG_WINDOW* wnd, UG_U8 id );
-UG_RESULT UG_ImageHide( UG_WINDOW* wnd, UG_U8 id );
-UG_RESULT UG_ImageSetBMP( UG_WINDOW* wnd, UG_U8 id, const UG_BMP* bmp );
+UG_RESULT UG_ImageCreate(UG_IMAGE *img, UG_WINDOW *wnd, UG_S16 xs, UG_S16 ys, UG_S16 xe, UG_S16 ye);
+UG_RESULT UG_ImageDelete(UG_IMAGE *img);
+UG_RESULT UG_ImageShow(UG_IMAGE *img);
+UG_RESULT UG_ImageHide(UG_IMAGE *img);
+UG_RESULT UG_ImageSetBMP(UG_IMAGE *img, const UG_BMP *bmp);
 
 /* MQ 10/18/2017  Nordic HW acceleration functions via nrf_gfx.h */
 #ifdef NORDIC_GUI

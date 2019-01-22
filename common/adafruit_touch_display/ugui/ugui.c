@@ -4552,52 +4552,9 @@ __UG_FONT_DATA unsigned char font_32x53[256][212]={
    const UG_FONT FONT_32X53 = {(unsigned char*)font_32x53,FONT_TYPE_1BPP,32,53,0,255,NULL};
 #endif
 
+static UG_U16 m_assigned_index_text = 0, m_assigned_index_button = 0, m_assigned_index_image = 0;
 
-#ifndef NORDIC_GUI
-UG_S16 UG_Init( UG_GUI* g, void (*p)(UG_S16,UG_S16,UG_COLOR), UG_S16 x, UG_S16 y )
-{
-   UG_U8 i;
 
-   g->pset = (void(*)(UG_S16,UG_S16,UG_COLOR))p;
-   g->x_dim = x;
-   g->y_dim = y;
-   g->console.x_start = 4;
-   g->console.y_start = 4;
-   g->console.x_end = g->x_dim - g->console.x_start-1;
-   g->console.y_end = g->y_dim - g->console.x_start-1;
-   g->console.x_pos = g->console.x_end;
-   g->console.y_pos = g->console.y_end;
-   g->char_h_space = 1;
-   g->char_v_space = 1;
-   g->font.p = NULL;
-   g->font.char_height = 0;
-   g->font.char_width = 0;
-   g->font.start_char = 0;
-   g->font.end_char = 0;
-   g->font.widths = NULL;
-#ifdef USE_COLOR_RGB888
-   g->desktop_color = 0x5E8BEf;
-#endif
-#ifdef USE_COLOR_RGB565
-   g->desktop_color = 0x5C5D;
-#endif
-   g->fore_color = C_WHITE;
-   g->back_color = C_BLACK;
-   g->next_window = NULL;
-   g->active_window = NULL;
-   g->last_window = NULL;
-
-   /* Clear drivers */
-   for(i=0;i<NUMBER_OF_DRIVERS;i++)
-   {
-      g->driver[i].driver = NULL;
-      g->driver[i].state = 0;
-   }
-
-   gui = g;
-   return 1;
-}
-#else  //#ifdef NORDIC_GUI
 UG_S16 UG_Init(UG_GUI* g, UG_S16 x, UG_S16 y, const nrf_lcd_t *p_nrf_lcd)
 {
    UG_U8 i;
@@ -4647,10 +4604,8 @@ UG_S16 UG_Init(UG_GUI* g, UG_S16 x, UG_S16 y, const nrf_lcd_t *p_nrf_lcd)
    UG_DriverRegister(DRIVER_DRAW_LINE, (void*)_HW_draw_line);
    UG_DriverRegister(DRIVER_FILL_FRAME, (void*)_HW_fill_frame);
    UG_DriverRegister(DRIVER_DRAW_BUFFER, (void*)_HW_draw_buffer);
-         
    return 1;
 }
-#endif
 
 UG_S16 UG_SelectGUI( UG_GUI* g )
 {
@@ -5895,18 +5850,14 @@ void UG_WaitForUpdate( void )
 
 void UG_DrawBMP( UG_S16 xp, UG_S16 yp, UG_BMP* bmp )
 {
-   UG_S16 x,y,xs;
-   UG_U8 r,g,b;
-   UG_U16* p;
-   UG_U16 tmp;
-   UG_COLOR c;
+   //UG_U16* p;
 
    if ( bmp->p == NULL ) return;
 
    /* Only support 16 BPP so far */
    if ( bmp->bpp == BMP_BPP_16 )
    {
-      p = (UG_U16*)bmp->p;
+      //p = (UG_U16*)bmp->p;
    }
    else
    {
@@ -6690,11 +6641,11 @@ UG_RESULT _UG_WindowClear( UG_WINDOW* wnd )
 /* -------------------------------------------------------------------------------- */
 /* -- BUTTON FUNCTIONS                                                           -- */
 /* -------------------------------------------------------------------------------- */
-UG_RESULT UG_ButtonCreate( UG_WINDOW* wnd, UG_BUTTON* btn, UG_U8 id, UG_S16 xs, UG_S16 ys, UG_S16 xe, UG_S16 ye )
+UG_RESULT UG_ButtonCreate(UG_BUTTON *btn, UG_WINDOW *wnd, UG_S16 xs, UG_S16 ys, UG_S16 xe, UG_S16 ye )
 {
    UG_OBJECT* obj;
 
-   obj = _UG_GetFreeObject( wnd );
+   obj = _UG_GetFreeObject(wnd);
    if ( obj == NULL ) return UG_RESULT_FAIL;
 
    /* Initialize object-specific parameters */
@@ -6708,6 +6659,8 @@ UG_RESULT UG_ButtonCreate( UG_WINDOW* wnd, UG_BUTTON* btn, UG_U8 id, UG_S16 xs, 
    if (gui != NULL) btn->font = &gui->font;
    else btn->font = NULL;
    btn->str = "-";
+   btn->id = m_assigned_index_button++;
+   btn->my_window = wnd;
 
    /* Initialize standard object parameters */
    obj->update = _UG_ButtonUpdate;
@@ -6722,7 +6675,7 @@ UG_RESULT UG_ButtonCreate( UG_WINDOW* wnd, UG_BUTTON* btn, UG_U8 id, UG_S16 xs, 
    obj->a_abs.ys = -1;
    obj->a_abs.xe = -1;
    obj->a_abs.ye = -1;
-   obj->id = id;
+   obj->id = btn->id;
    obj->state |= OBJ_STATE_VISIBLE | OBJ_STATE_REDRAW | OBJ_STATE_VALID | OBJ_STATE_TOUCH_ENABLE;
    obj->data = (void*)btn;
 
@@ -6732,17 +6685,17 @@ UG_RESULT UG_ButtonCreate( UG_WINDOW* wnd, UG_BUTTON* btn, UG_U8 id, UG_S16 xs, 
    return UG_RESULT_OK;
 }
 
-UG_RESULT UG_ButtonDelete( UG_WINDOW* wnd, UG_U8 id )
+UG_RESULT UG_ButtonDelete(UG_BUTTON *btn)
 {
-   return _UG_DeleteObject( wnd, OBJ_TYPE_BUTTON, id );
+   return _UG_DeleteObject(btn->my_window, OBJ_TYPE_BUTTON, btn->id);
 }
 
-UG_RESULT UG_ButtonShow( UG_WINDOW* wnd, UG_U8 id )
+UG_RESULT UG_ButtonShow(UG_BUTTON *btn)
 {
-   UG_OBJECT* obj=NULL;
+   UG_OBJECT* obj = NULL;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_BUTTON, id );
-   if ( obj == NULL ) return UG_RESULT_FAIL;
+   obj = _UG_SearchObject(btn->my_window, OBJ_TYPE_BUTTON, btn->id);
+   if (obj == NULL) return UG_RESULT_FAIL;
 
    obj->state |= OBJ_STATE_VISIBLE;
    obj->state |= OBJ_STATE_UPDATE | OBJ_STATE_REDRAW;
@@ -6750,15 +6703,13 @@ UG_RESULT UG_ButtonShow( UG_WINDOW* wnd, UG_U8 id )
    return UG_RESULT_OK;
 }
 
-UG_RESULT UG_ButtonHide( UG_WINDOW* wnd, UG_U8 id )
+UG_RESULT UG_ButtonHide(UG_BUTTON *btn)
 {
-   UG_OBJECT* obj=NULL;
-   UG_BUTTON* btn=NULL;
+   UG_OBJECT* obj = NULL;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_BUTTON, id );
+   obj = _UG_SearchObject(btn->my_window, OBJ_TYPE_BUTTON, btn->id);
    if ( obj == NULL ) return UG_RESULT_FAIL;
 
-   btn = (UG_BUTTON*)(obj->data);
 
    btn->state &= ~BTN_STATE_PRESSED;
    obj->touch_state = OBJ_TOUCH_STATE_INIT;
@@ -6769,105 +6720,90 @@ UG_RESULT UG_ButtonHide( UG_WINDOW* wnd, UG_U8 id )
    return UG_RESULT_OK;
 }
 
-UG_RESULT UG_ButtonSetForeColor( UG_WINDOW* wnd, UG_U8 id, UG_COLOR fc )
+UG_RESULT UG_ButtonSetForeColor(UG_BUTTON *btn, UG_COLOR fc )
 {
    UG_OBJECT* obj=NULL;
-   UG_BUTTON* btn=NULL;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_BUTTON, id );
+   obj = _UG_SearchObject(btn->my_window, OBJ_TYPE_BUTTON, btn->id);
    if ( obj == NULL ) return UG_RESULT_FAIL;
 
-   btn = (UG_BUTTON*)(obj->data);
    btn->fc = fc;
    obj->state |= OBJ_STATE_UPDATE | OBJ_STATE_REDRAW;
 
    return UG_RESULT_OK;
 }
 
-UG_RESULT UG_ButtonSetBackColor( UG_WINDOW* wnd, UG_U8 id, UG_COLOR bc )
+UG_RESULT UG_ButtonSetBackColor(UG_BUTTON *btn, UG_COLOR bc )
 {
    UG_OBJECT* obj=NULL;
-   UG_BUTTON* btn=NULL;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_BUTTON, id );
+   obj = _UG_SearchObject(btn->my_window, OBJ_TYPE_BUTTON, btn->id);
    if ( obj == NULL ) return UG_RESULT_FAIL;
 
-   btn = (UG_BUTTON*)(obj->data);
    btn->bc = bc;
    obj->state |= OBJ_STATE_UPDATE | OBJ_STATE_REDRAW;
 
    return UG_RESULT_OK;
 }
 
-UG_RESULT UG_ButtonSetAlternateForeColor( UG_WINDOW* wnd, UG_U8 id, UG_COLOR afc )
+UG_RESULT UG_ButtonSetAlternateForeColor(UG_BUTTON *btn, UG_COLOR afc )
 {
    UG_OBJECT* obj=NULL;
-   UG_BUTTON* btn=NULL;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_BUTTON, id );
+   obj = _UG_SearchObject(btn->my_window, OBJ_TYPE_BUTTON, btn->id);
    if ( obj == NULL ) return UG_RESULT_FAIL;
 
-   btn = (UG_BUTTON*)(obj->data);
    btn->afc = afc;
    obj->state |= OBJ_STATE_UPDATE | OBJ_STATE_REDRAW;
 
    return UG_RESULT_OK;
 }
 
-UG_RESULT UG_ButtonSetAlternateBackColor( UG_WINDOW* wnd, UG_U8 id, UG_COLOR abc )
+UG_RESULT UG_ButtonSetAlternateBackColor(UG_BUTTON *btn, UG_COLOR abc )
 {
    UG_OBJECT* obj=NULL;
-   UG_BUTTON* btn=NULL;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_BUTTON, id );
+   obj = _UG_SearchObject(btn->my_window, OBJ_TYPE_BUTTON, btn->id);
    if ( obj == NULL ) return UG_RESULT_FAIL;
 
-   btn = (UG_BUTTON*)(obj->data);
    btn->abc = abc;
    obj->state |= OBJ_STATE_UPDATE | OBJ_STATE_REDRAW;
 
    return UG_RESULT_OK;
 }
 
-UG_RESULT UG_ButtonSetText( UG_WINDOW* wnd, UG_U8 id, char* str )
+UG_RESULT UG_ButtonSetText(UG_BUTTON *btn, char *str)
 {
    UG_OBJECT* obj=NULL;
-   UG_BUTTON* btn=NULL;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_BUTTON, id );
-   if ( obj == NULL ) return UG_RESULT_FAIL;
+   obj = _UG_SearchObject(btn->my_window, OBJ_TYPE_BUTTON, btn->id);
+   if (obj == NULL) return UG_RESULT_FAIL;
 
-   btn = (UG_BUTTON*)(obj->data);
    btn->str = str;
    obj->state |= OBJ_STATE_UPDATE | OBJ_STATE_REDRAW;
 
    return UG_RESULT_OK;
 }
 
-UG_RESULT UG_ButtonSetFont( UG_WINDOW* wnd, UG_U8 id, const UG_FONT* font )
+UG_RESULT UG_ButtonSetFont(UG_BUTTON *btn, const UG_FONT* font )
 {
    UG_OBJECT* obj=NULL;
-   UG_BUTTON* btn=NULL;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_BUTTON, id );
+   obj = _UG_SearchObject(btn->my_window, OBJ_TYPE_BUTTON, btn->id);
    if ( obj == NULL ) return UG_RESULT_FAIL;
 
-   btn = (UG_BUTTON*)(obj->data);
    btn->font = font;
    obj->state |= OBJ_STATE_UPDATE | OBJ_STATE_REDRAW;
 
    return UG_RESULT_OK;
 }
 
-UG_RESULT UG_ButtonSetStyle( UG_WINDOW* wnd, UG_U8 id, UG_U8 style )
+UG_RESULT UG_ButtonSetStyle(UG_BUTTON *btn, UG_U8 style )
 {
    UG_OBJECT* obj=NULL;
-   UG_BUTTON* btn=NULL;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_BUTTON, id );
+   obj = _UG_SearchObject(btn->my_window, OBJ_TYPE_BUTTON, btn->id);
    if ( obj == NULL ) return UG_RESULT_FAIL;
-
-   btn = (UG_BUTTON*)(obj->data);
 
    /* Select color scheme */
    btn->style &= ~(BTN_STYLE_USE_ALTERNATE_COLORS | BTN_STYLE_TOGGLE_COLORS | BTN_STYLE_NO_BORDERS | BTN_STYLE_NO_FILL);
@@ -6907,196 +6843,170 @@ UG_RESULT UG_ButtonSetStyle( UG_WINDOW* wnd, UG_U8 id, UG_U8 style )
    return UG_RESULT_OK;
 }
 
-UG_RESULT UG_ButtonSetHSpace( UG_WINDOW* wnd, UG_U8 id, UG_S8 hs )
+UG_RESULT UG_ButtonSetHSpace(UG_BUTTON *btn, UG_S8 hs )
 {
    UG_OBJECT* obj=NULL;
-   UG_BUTTON* btn=NULL;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_BUTTON, id );
+   obj = _UG_SearchObject(btn->my_window, OBJ_TYPE_BUTTON, btn->id);
    if ( obj == NULL ) return UG_RESULT_FAIL;
 
-   btn = (UG_BUTTON*)(obj->data);
    btn->h_space = hs;
    obj->state |= OBJ_STATE_UPDATE | OBJ_STATE_REDRAW;
 
    return UG_RESULT_OK;
 }
 
-UG_RESULT UG_ButtonSetVSpace( UG_WINDOW* wnd, UG_U8 id, UG_S8 vs )
+UG_RESULT UG_ButtonSetVSpace(UG_BUTTON *btn, UG_S8 vs )
 {
    UG_OBJECT* obj=NULL;
-   UG_BUTTON* btn=NULL;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_BUTTON, id );
+   obj = _UG_SearchObject(btn->my_window, OBJ_TYPE_BUTTON, btn->id);
    if ( obj == NULL ) return UG_RESULT_FAIL;
 
-   btn = (UG_BUTTON*)(obj->data);
    btn->v_space = vs;
    obj->state |= OBJ_STATE_UPDATE | OBJ_STATE_REDRAW;
 
    return UG_RESULT_OK;
 }
 
-UG_RESULT UG_ButtonSetAlignment( UG_WINDOW* wnd, UG_U8 id, UG_U8 align )
+UG_RESULT UG_ButtonSetAlignment(UG_BUTTON *btn, UG_U8 align )
 {
    UG_OBJECT* obj=NULL;
-   UG_BUTTON* btn=NULL;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_BUTTON, id );
+   obj = _UG_SearchObject(btn->my_window, OBJ_TYPE_BUTTON, btn->id);
    if ( obj == NULL ) return UG_RESULT_FAIL;
 
-   btn = (UG_BUTTON*)(obj->data);
    btn->align = align;
    obj->state |= OBJ_STATE_UPDATE | OBJ_STATE_REDRAW;
 
    return UG_RESULT_OK;
 }
 
-UG_COLOR UG_ButtonGetForeColor( UG_WINDOW* wnd, UG_U8 id )
+UG_COLOR UG_ButtonGetForeColor(UG_BUTTON *btn)
 {
    UG_OBJECT* obj=NULL;
-   UG_BUTTON* btn=NULL;
    UG_COLOR c = C_BLACK;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_BUTTON, id );
+   obj = _UG_SearchObject(btn->my_window, OBJ_TYPE_BUTTON, btn->id);
    if ( obj != NULL )
    {
-      btn = (UG_BUTTON*)(obj->data);
       c = btn->fc;
    }
    return c;
 }
 
-UG_COLOR UG_ButtonGetBackColor( UG_WINDOW* wnd, UG_U8 id )
+UG_COLOR UG_ButtonGetBackColor(UG_BUTTON *btn)
 {
    UG_OBJECT* obj=NULL;
-   UG_BUTTON* btn=NULL;
    UG_COLOR c = C_BLACK;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_BUTTON, id );
+   obj = _UG_SearchObject(btn->my_window, OBJ_TYPE_BUTTON, btn->id);
    if ( obj != NULL )
    {
-      btn = (UG_BUTTON*)(obj->data);
       c = btn->bc;
    }
    return c;
 }
 
-UG_COLOR UG_ButtonGetAlternateForeColor( UG_WINDOW* wnd, UG_U8 id )
+UG_COLOR UG_ButtonGetAlternateForeColor(UG_BUTTON *btn)
 {
    UG_OBJECT* obj=NULL;
-   UG_BUTTON* btn=NULL;
    UG_COLOR c = C_BLACK;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_BUTTON, id );
+   obj = _UG_SearchObject(btn->my_window, OBJ_TYPE_BUTTON, btn->id);
    if ( obj != NULL )
    {
-      btn = (UG_BUTTON*)(obj->data);
       c = btn->afc;
    }
    return c;
 }
 
-UG_COLOR UG_ButtonGetAlternateBackColor( UG_WINDOW* wnd, UG_U8 id )
+UG_COLOR UG_ButtonGetAlternateBackColor(UG_BUTTON *btn)
 {
    UG_OBJECT* obj=NULL;
-   UG_BUTTON* btn=NULL;
    UG_COLOR c = C_BLACK;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_BUTTON, id );
+   obj = _UG_SearchObject(btn->my_window, OBJ_TYPE_BUTTON, btn->id);
    if ( obj != NULL )
    {
-      btn = (UG_BUTTON*)(obj->data);
       c = btn->abc;
    }
    return c;
 }
 
-char* UG_ButtonGetText( UG_WINDOW* wnd, UG_U8 id )
+char* UG_ButtonGetText(UG_BUTTON *btn)
 {
    UG_OBJECT* obj=NULL;
-   UG_BUTTON* btn=NULL;
    char* str = NULL;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_BUTTON, id );
+   obj = _UG_SearchObject(btn->my_window, OBJ_TYPE_BUTTON, btn->id);
    if ( obj != NULL )
    {
-      btn = (UG_BUTTON*)(obj->data);
       str = btn->str;
    }
    return str;
 }
 
-UG_FONT* UG_ButtonGetFont( UG_WINDOW* wnd, UG_U8 id )
+UG_FONT* UG_ButtonGetFont(UG_BUTTON *btn)
 {
    UG_OBJECT* obj=NULL;
-   UG_BUTTON* btn=NULL;
    UG_FONT* font = NULL;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_BUTTON, id );
+   obj = _UG_SearchObject(btn->my_window, OBJ_TYPE_BUTTON, btn->id);
    if ( obj != NULL )
    {
-      btn = (UG_BUTTON*)(obj->data);
       font = (UG_FONT*)btn->font;
    }
    return font;
 }
 
-UG_U8 UG_ButtonGetStyle( UG_WINDOW* wnd, UG_U8 id )
+UG_U8 UG_ButtonGetStyle(UG_BUTTON *btn)
 {
    UG_OBJECT* obj=NULL;
-   UG_BUTTON* btn=NULL;
    UG_U8 style = 0;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_BUTTON, id );
+   obj = _UG_SearchObject(btn->my_window, OBJ_TYPE_BUTTON, btn->id);
    if ( obj != NULL )
    {
-      btn = (UG_BUTTON*)(obj->data);
       style = btn->style;
    }
    return style;
 }
 
-UG_S8 UG_ButtonGetHSpace( UG_WINDOW* wnd, UG_U8 id )
+UG_S8 UG_ButtonGetHSpace(UG_BUTTON *btn)
 {
    UG_OBJECT* obj=NULL;
-   UG_BUTTON* btn=NULL;
    UG_S8 hs = 0;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_BUTTON, id );
+   obj = _UG_SearchObject(btn->my_window, OBJ_TYPE_BUTTON, btn->id);
    if ( obj != NULL )
    {
-      btn = (UG_BUTTON*)(obj->data);
       hs = btn->h_space;
    }
    return hs;
 }
 
-UG_S8 UG_ButtonGetVSpace( UG_WINDOW* wnd, UG_U8 id )
+UG_S8 UG_ButtonGetVSpace(UG_BUTTON *btn)
 {
    UG_OBJECT* obj=NULL;
-   UG_BUTTON* btn=NULL;
    UG_S8 vs = 0;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_BUTTON, id );
+   obj = _UG_SearchObject(btn->my_window, OBJ_TYPE_BUTTON, btn->id);
    if ( obj != NULL )
    {
-      btn = (UG_BUTTON*)(obj->data);
       vs = btn->v_space;
    }
    return vs;
 }
 
-UG_U8 UG_ButtonGetAlignment( UG_WINDOW* wnd, UG_U8 id )
+UG_U8 UG_ButtonGetAlignment(UG_BUTTON *btn)
 {
    UG_OBJECT* obj=NULL;
-   UG_BUTTON* btn=NULL;
    UG_U8 align = 0;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_BUTTON, id );
+   obj = _UG_SearchObject(btn->my_window, OBJ_TYPE_BUTTON, btn->id);
    if ( obj != NULL )
    {
-      btn = (UG_BUTTON*)(obj->data);
       align = btn->align;
    }
    return align;
@@ -7834,12 +7744,12 @@ void _UG_CheckboxUpdate(UG_WINDOW* wnd, UG_OBJECT* obj)
 /* -------------------------------------------------------------------------------- */
 /* -- TEXTBOX FUNCTIONS                                                          -- */
 /* -------------------------------------------------------------------------------- */
-UG_RESULT UG_TextboxCreate( UG_WINDOW* wnd, UG_TEXTBOX* txb, UG_U8 id, UG_S16 xs, UG_S16 ys, UG_S16 xe, UG_S16 ye )
+UG_RESULT UG_TextboxCreate(UG_TEXTBOX* txb, UG_WINDOW* wnd, UG_S16 xs, UG_S16 ys, UG_S16 xe, UG_S16 ye )
 {
    UG_OBJECT* obj;
 
-   obj = _UG_GetFreeObject( wnd );
-   if ( obj == NULL ) return UG_RESULT_FAIL;
+   obj = _UG_GetFreeObject(wnd);
+   if (obj == NULL) return UG_RESULT_FAIL;
 
    /* Initialize object-specific parameters */
    txb->str = NULL;
@@ -7851,6 +7761,8 @@ UG_RESULT UG_TextboxCreate( UG_WINDOW* wnd, UG_TEXTBOX* txb, UG_U8 id, UG_S16 xs
    txb->align = ALIGN_CENTER;
    txb->h_space = 0;
    txb->v_space = 0;
+   txb->id = m_assigned_index_text++;
+   txb->my_window = wnd;
 
    /* Initialize standard object parameters */
    obj->update = _UG_TextboxUpdate;
@@ -7865,7 +7777,7 @@ UG_RESULT UG_TextboxCreate( UG_WINDOW* wnd, UG_TEXTBOX* txb, UG_U8 id, UG_S16 xs
    obj->a_abs.ys = -1;
    obj->a_abs.xe = -1;
    obj->a_abs.ye = -1;
-   obj->id = id;
+   obj->id = txb->id;
    obj->state |= OBJ_STATE_VISIBLE | OBJ_STATE_REDRAW | OBJ_STATE_VALID;
    obj->data = (void*)txb;
 
@@ -7875,16 +7787,16 @@ UG_RESULT UG_TextboxCreate( UG_WINDOW* wnd, UG_TEXTBOX* txb, UG_U8 id, UG_S16 xs
    return UG_RESULT_OK;
 }
 
-UG_RESULT UG_TextboxDelete( UG_WINDOW* wnd, UG_U8 id )
+UG_RESULT UG_TextboxDelete(UG_TEXTBOX* txb)
 {
-   return _UG_DeleteObject( wnd, OBJ_TYPE_TEXTBOX, id );
+   return _UG_DeleteObject(txb->my_window, OBJ_TYPE_TEXTBOX, txb->id);
 }
 
-UG_RESULT UG_TextboxShow( UG_WINDOW* wnd, UG_U8 id )
+UG_RESULT UG_TextboxShow(UG_TEXTBOX* txb)
 {
    UG_OBJECT* obj=NULL;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_TEXTBOX, id );
+   obj = _UG_SearchObject(txb->my_window, OBJ_TYPE_TEXTBOX, txb->id);
    if ( obj == NULL ) return UG_RESULT_FAIL;
 
    obj->state |= OBJ_STATE_VISIBLE;
@@ -7893,11 +7805,11 @@ UG_RESULT UG_TextboxShow( UG_WINDOW* wnd, UG_U8 id )
    return UG_RESULT_OK;
 }
 
-UG_RESULT UG_TextboxHide( UG_WINDOW* wnd, UG_U8 id )
+UG_RESULT UG_TextboxHide(UG_TEXTBOX* txb)
 {
    UG_OBJECT* obj=NULL;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_TEXTBOX, id );
+   obj = _UG_SearchObject(txb->my_window, OBJ_TYPE_TEXTBOX, txb->id);
    if ( obj == NULL ) return UG_RESULT_FAIL;
 
    obj->state &= ~OBJ_STATE_VISIBLE;
@@ -7906,211 +7818,183 @@ UG_RESULT UG_TextboxHide( UG_WINDOW* wnd, UG_U8 id )
    return UG_RESULT_OK;
 }
 
-UG_RESULT UG_TextboxSetForeColor( UG_WINDOW* wnd, UG_U8 id, UG_COLOR fc )
+UG_RESULT UG_TextboxSetForeColor(UG_TEXTBOX* txb, UG_COLOR fc )
 {
    UG_OBJECT* obj=NULL;
-   UG_TEXTBOX* txb=NULL;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_TEXTBOX, id );
+   obj = _UG_SearchObject(txb->my_window, OBJ_TYPE_TEXTBOX, txb->id);
    if ( obj == NULL ) return UG_RESULT_FAIL;
 
-   txb = (UG_TEXTBOX*)(obj->data);
    txb->fc = fc;
    obj->state |= OBJ_STATE_UPDATE | OBJ_STATE_REDRAW;
 
    return UG_RESULT_OK;
 }
 
-UG_RESULT UG_TextboxSetBackColor( UG_WINDOW* wnd, UG_U8 id, UG_COLOR bc )
+UG_RESULT UG_TextboxSetBackColor(UG_TEXTBOX* txb, UG_COLOR bc )
 {
    UG_OBJECT* obj=NULL;
-   UG_TEXTBOX* txb=NULL;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_TEXTBOX, id );
+   obj = _UG_SearchObject(txb->my_window, OBJ_TYPE_TEXTBOX, txb->id);
    if ( obj == NULL ) return UG_RESULT_FAIL;
 
-   txb = (UG_TEXTBOX*)(obj->data);
    txb->bc = bc;
    obj->state |= OBJ_STATE_UPDATE | OBJ_STATE_REDRAW;
 
    return UG_RESULT_OK;
 }
 
-UG_RESULT UG_TextboxSetText( UG_WINDOW* wnd, UG_U8 id, char* str )
+UG_RESULT UG_TextboxSetText(UG_TEXTBOX* txb, char* str )
 {
    UG_OBJECT* obj=NULL;
-   UG_TEXTBOX* txb=NULL;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_TEXTBOX, id );
+   obj = _UG_SearchObject(txb->my_window, OBJ_TYPE_TEXTBOX, txb->id);
    if ( obj == NULL ) return UG_RESULT_FAIL;
 
-   txb = (UG_TEXTBOX*)(obj->data);
    txb->str = str;
    obj->state |= OBJ_STATE_UPDATE | OBJ_STATE_REDRAW;
 
    return UG_RESULT_OK;
 }
 
-UG_RESULT UG_TextboxSetFont( UG_WINDOW* wnd, UG_U8 id, const UG_FONT* font )
+UG_RESULT UG_TextboxSetFont(UG_TEXTBOX* txb, const UG_FONT* font )
 {
    UG_OBJECT* obj=NULL;
-   UG_TEXTBOX* txb=NULL;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_TEXTBOX, id );
+   obj = _UG_SearchObject(txb->my_window, OBJ_TYPE_TEXTBOX, txb->id);
    if ( obj == NULL ) return UG_RESULT_FAIL;
 
-   txb = (UG_TEXTBOX*)(obj->data);
    txb->font = font;
    obj->state |= OBJ_STATE_UPDATE | OBJ_STATE_REDRAW;
 
    return UG_RESULT_OK;
 }
 
-UG_RESULT UG_TextboxSetHSpace( UG_WINDOW* wnd, UG_U8 id, UG_S8 hs )
+UG_RESULT UG_TextboxSetHSpace(UG_TEXTBOX* txb, UG_S8 hs )
 {
    UG_OBJECT* obj=NULL;
-   UG_TEXTBOX* txb=NULL;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_TEXTBOX, id );
+   obj = _UG_SearchObject(txb->my_window, OBJ_TYPE_TEXTBOX, txb->id);
    if ( obj == NULL ) return UG_RESULT_FAIL;
 
-   txb = (UG_TEXTBOX*)(obj->data);
    txb->h_space = hs;
    obj->state |= OBJ_STATE_UPDATE | OBJ_STATE_REDRAW;
 
    return UG_RESULT_OK;
 }
 
-UG_RESULT UG_TextboxSetVSpace( UG_WINDOW* wnd, UG_U8 id, UG_S8 vs )
+UG_RESULT UG_TextboxSetVSpace(UG_TEXTBOX* txb, UG_S8 vs )
 {
    UG_OBJECT* obj=NULL;
-   UG_TEXTBOX* txb=NULL;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_TEXTBOX, id );
+   obj = _UG_SearchObject(txb->my_window, OBJ_TYPE_TEXTBOX, txb->id);
    if ( obj == NULL ) return UG_RESULT_FAIL;
 
-   txb = (UG_TEXTBOX*)(obj->data);
    txb->v_space = vs;
    obj->state |= OBJ_STATE_UPDATE | OBJ_STATE_REDRAW;
 
    return UG_RESULT_OK;
 }
 
-UG_RESULT UG_TextboxSetAlignment( UG_WINDOW* wnd, UG_U8 id, UG_U8 align )
+UG_RESULT UG_TextboxSetAlignment(UG_TEXTBOX* txb, UG_U8 align )
 {
    UG_OBJECT* obj=NULL;
-   UG_TEXTBOX* txb=NULL;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_TEXTBOX, id );
+   obj = _UG_SearchObject(txb->my_window, OBJ_TYPE_TEXTBOX, txb->id);
    if ( obj == NULL ) return UG_RESULT_FAIL;
 
-   txb = (UG_TEXTBOX*)(obj->data);
    txb->align = align;
    obj->state |= OBJ_STATE_UPDATE | OBJ_STATE_REDRAW;
 
    return UG_RESULT_OK;
 }
 
-UG_COLOR UG_TextboxGetForeColor( UG_WINDOW* wnd, UG_U8 id )
+UG_COLOR UG_TextboxGetForeColor(UG_TEXTBOX* txb)
 {
    UG_OBJECT* obj=NULL;
-   UG_TEXTBOX* txb=NULL;
    UG_COLOR c = C_BLACK;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_TEXTBOX, id );
+   obj = _UG_SearchObject(txb->my_window, OBJ_TYPE_TEXTBOX, txb->id);
    if ( obj != NULL )
    {
-      txb = (UG_TEXTBOX*)(obj->data);
       c = txb->fc;
    }
    return c;
 }
 
-UG_COLOR UG_TextboxGetBackColor( UG_WINDOW* wnd, UG_U8 id )
+UG_COLOR UG_TextboxGetBackColor(UG_TEXTBOX* txb)
 {
    UG_OBJECT* obj=NULL;
-   UG_TEXTBOX* txb=NULL;
    UG_COLOR c = C_BLACK;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_TEXTBOX, id );
+   obj = _UG_SearchObject(txb->my_window, OBJ_TYPE_TEXTBOX, txb->id);
    if ( obj != NULL )
    {
-      txb = (UG_TEXTBOX*)(obj->data);
       c = txb->bc;
    }
    return c;
 }
 
-char* UG_TextboxGetText( UG_WINDOW* wnd, UG_U8 id )
+char* UG_TextboxGetText(UG_TEXTBOX* txb)
 {
    UG_OBJECT* obj=NULL;
-   UG_TEXTBOX* txb=NULL;
    char* str = NULL;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_TEXTBOX, id );
+   obj = _UG_SearchObject(txb->my_window, OBJ_TYPE_TEXTBOX, txb->id);
    if ( obj != NULL )
    {
-      txb = (UG_TEXTBOX*)(obj->data);
       str = txb->str;
    }
    return str;
 }
 
-UG_FONT* UG_TextboxGetFont( UG_WINDOW* wnd, UG_U8 id )
+UG_FONT* UG_TextboxGetFont(UG_TEXTBOX* txb)
 {
    UG_OBJECT* obj=NULL;
-   UG_TEXTBOX* txb=NULL;
    UG_FONT* font = NULL;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_TEXTBOX, id );
+   obj = _UG_SearchObject(txb->my_window, OBJ_TYPE_TEXTBOX, txb->id);
    if ( obj != NULL )
    {
-      txb = (UG_TEXTBOX*)(obj->data);
       font = (UG_FONT*)txb->font;
    }
    return font;
 }
 
-UG_S8 UG_TextboxGetHSpace( UG_WINDOW* wnd, UG_U8 id )
+UG_S8 UG_TextboxGetHSpace(UG_TEXTBOX* txb)
 {
    UG_OBJECT* obj=NULL;
-   UG_TEXTBOX* txb=NULL;
    UG_S8 hs = 0;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_TEXTBOX, id );
+   obj = _UG_SearchObject(txb->my_window, OBJ_TYPE_TEXTBOX, txb->id);
    if ( obj != NULL )
    {
-      txb = (UG_TEXTBOX*)(obj->data);
       hs = txb->h_space;
    }
    return hs;
 }
 
-UG_S8 UG_TextboxGetVSpace( UG_WINDOW* wnd, UG_U8 id )
+UG_S8 UG_TextboxGetVSpace(UG_TEXTBOX* txb)
 {
    UG_OBJECT* obj=NULL;
-   UG_TEXTBOX* txb=NULL;
    UG_S8 vs = 0;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_TEXTBOX, id );
+   obj = _UG_SearchObject(txb->my_window, OBJ_TYPE_TEXTBOX, txb->id);
    if ( obj != NULL )
    {
-      txb = (UG_TEXTBOX*)(obj->data);
       vs = txb->v_space;
    }
    return vs;
 }
 
-UG_U8 UG_TextboxGetAlignment( UG_WINDOW* wnd, UG_U8 id )
+UG_U8 UG_TextboxGetAlignment(UG_TEXTBOX* txb)
 {
    UG_OBJECT* obj=NULL;
-   UG_TEXTBOX* txb=NULL;
    UG_U8 align = 0;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_TEXTBOX, id );
+   obj = _UG_SearchObject(txb->my_window, OBJ_TYPE_TEXTBOX, txb->id);
    if ( obj != NULL )
    {
-      txb = (UG_TEXTBOX*)(obj->data);
       align = txb->align;
    }
    return align;
@@ -8190,16 +8074,18 @@ void _UG_TextboxUpdate(UG_WINDOW* wnd, UG_OBJECT* obj)
 /* -------------------------------------------------------------------------------- */
 /* -- IMAGE FUNCTIONS                                                            -- */
 /* -------------------------------------------------------------------------------- */
-UG_RESULT UG_ImageCreate( UG_WINDOW* wnd, UG_IMAGE* img, UG_U8 id, UG_S16 xs, UG_S16 ys, UG_S16 xe, UG_S16 ye )
+UG_RESULT UG_ImageCreate(UG_IMAGE *img, UG_WINDOW *wnd, UG_S16 xs, UG_S16 ys, UG_S16 xe, UG_S16 ye)
 {
-   UG_OBJECT* obj;
+   UG_OBJECT *obj;
 
-   obj = _UG_GetFreeObject( wnd );
-   if ( obj == NULL ) return UG_RESULT_FAIL;
+   obj = _UG_GetFreeObject(wnd);
+   if (obj == NULL) return UG_RESULT_FAIL;
 
    /* Initialize object-specific parameters */
    img->img = NULL;
    img->type = IMG_TYPE_BMP;
+   img->id = m_assigned_index_image++;
+   img->my_window = wnd;
 
    /* Initialize standard object parameters */
    obj->update = _UG_ImageUpdate;
@@ -8214,7 +8100,7 @@ UG_RESULT UG_ImageCreate( UG_WINDOW* wnd, UG_IMAGE* img, UG_U8 id, UG_S16 xs, UG
    obj->a_abs.ys = -1;
    obj->a_abs.xe = -1;
    obj->a_abs.ye = -1;
-   obj->id = id;
+   obj->id = img->id;
    obj->state |= OBJ_STATE_VISIBLE | OBJ_STATE_REDRAW | OBJ_STATE_VALID;
    obj->data = (void*)img;
 
@@ -8224,17 +8110,17 @@ UG_RESULT UG_ImageCreate( UG_WINDOW* wnd, UG_IMAGE* img, UG_U8 id, UG_S16 xs, UG
    return UG_RESULT_OK;
 }
 
-UG_RESULT UG_ImageDelete( UG_WINDOW* wnd, UG_U8 id )
+UG_RESULT UG_ImageDelete(UG_IMAGE *img)
 {
-   return _UG_DeleteObject( wnd, OBJ_TYPE_IMAGE, id );
+   return _UG_DeleteObject(img->my_window, OBJ_TYPE_IMAGE, img->id);
 }
 
-UG_RESULT UG_ImageShow( UG_WINDOW* wnd, UG_U8 id )
+UG_RESULT UG_ImageShow(UG_IMAGE *img)
 {
    UG_OBJECT* obj=NULL;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_IMAGE, id );
-   if ( obj == NULL ) return UG_RESULT_FAIL;
+   obj = _UG_SearchObject(img->my_window, OBJ_TYPE_IMAGE, img->id);
+   if (obj == NULL) return UG_RESULT_FAIL;
 
    obj->state |= OBJ_STATE_VISIBLE;
    obj->state |= OBJ_STATE_UPDATE | OBJ_STATE_REDRAW;
@@ -8242,11 +8128,11 @@ UG_RESULT UG_ImageShow( UG_WINDOW* wnd, UG_U8 id )
    return UG_RESULT_OK;
 }
 
-UG_RESULT UG_ImageHide( UG_WINDOW* wnd, UG_U8 id )
+UG_RESULT UG_ImageHide(UG_IMAGE *img)
 {
-   UG_OBJECT* obj=NULL;
+   UG_OBJECT* obj = NULL;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_IMAGE, id );
+   obj = _UG_SearchObject(img->my_window, OBJ_TYPE_IMAGE, img->id);
    if ( obj == NULL ) return UG_RESULT_FAIL;
 
    obj->state &= ~OBJ_STATE_VISIBLE;
@@ -8255,15 +8141,13 @@ UG_RESULT UG_ImageHide( UG_WINDOW* wnd, UG_U8 id )
    return UG_RESULT_OK;
 }
 
-UG_RESULT UG_ImageSetBMP( UG_WINDOW* wnd, UG_U8 id, const UG_BMP* bmp )
+UG_RESULT UG_ImageSetBMP(UG_IMAGE *img, const UG_BMP *bmp)
 {
-   UG_OBJECT* obj=NULL;
-   UG_IMAGE* img=NULL;
+   UG_OBJECT* obj = NULL;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_IMAGE, id );
-   if ( obj == NULL ) return UG_RESULT_FAIL;
+   obj = _UG_SearchObject(img->my_window, OBJ_TYPE_IMAGE, img->id);
+   if (obj == NULL) return UG_RESULT_FAIL;
 
-   img = (UG_IMAGE*)(obj->data);
    img->img = (void*)bmp;
    img->type = IMG_TYPE_BMP;
    obj->state |= OBJ_STATE_UPDATE | OBJ_STATE_REDRAW;
