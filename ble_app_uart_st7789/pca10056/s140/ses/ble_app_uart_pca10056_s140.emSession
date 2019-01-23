@@ -60,11 +60,11 @@
   <Watches active="0" update="Never"/>
  </Watch4>
  <Files>
-  <SessionOpenFile windowGroup="DockEditLeft" x="25" y="719" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../main.c" selected="1" top="694" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="79" y="105" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../app_display.c" selected="0" top="0" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="57" y="917" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../common/adafruit_touch_display/ugui/ugui.h" selected="0" top="320" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="719" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../main.c" selected="1" top="694" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="17" y="2" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../app_display.c" selected="0" top="0" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="917" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../common/adafruit_touch_display/ugui/ugui.h" selected="0" top="0" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="50" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../../../../components/libraries/uart/app_uart_fifo.c" selected="0" top="3" codecName="Default"/>
-  <SessionOpenFile windowGroup="DockEditLeft" x="18" y="6783" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../common/adafruit_touch_display/ugui/ugui.c" selected="0" top="6768" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="6783" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../common/adafruit_touch_display/ugui/ugui.c" selected="0" top="36" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="587" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../common/adafruit_touch_display/gfx_extended/nrf_gfx_ext.c" selected="0" top="528" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="12" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../app_display.h" selected="0" top="0" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="72" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../../../../components/libraries/util/app_error.c" selected="0" top="43" codecName="Default"/>
@@ -74,6 +74,8 @@
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="213" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../../../../integration/nrfx/legacy/nrf_drv_spi.h" selected="0" top="175" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="383" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../common/adafruit_touch_display/st7789.c" selected="0" top="345" codecName="Default"/>
   <SessionOpenFile windowGroup="DockEditLeft" x="0" y="7103" useTextEdit="1" useBinaryEdit="0" left="0" path="../config/sdk_config.h" selected="0" top="7027" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="47" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../common/adafruit_touch_display/gfx_extended/nrf_gfx_ext.h" selected="0" top="0" codecName="Default"/>
+  <SessionOpenFile windowGroup="DockEditLeft" x="0" y="0" useTextEdit="1" useBinaryEdit="0" left="0" path="../../../../../../../external/thedotfactory_fonts/nrf_font.h" selected="0" top="0" codecName="Default"/>
  </Files>
- <ARMCrossStudioWindow activeProject="ble_app_uart_pca10056_s140" fileDialogDefaultFilter="" autoConnectTarget="J-Link" buildConfiguration="Release" debugSearchFileMap="" fileDialogInitialDirectory="C:/Nordic_Semiconductor/nRF5_SDK_15.2.0_9412b96/examples/_too/nrf52-display-test/common/adafruit_touch_display" debugSearchPath="" autoConnectCapabilities="3711"/>
+ <ARMCrossStudioWindow activeProject="ble_app_uart_pca10056_s140" fileDialogDefaultFilter="*.c" autoConnectTarget="J-Link" buildConfiguration="Release" debugSearchFileMap="" fileDialogInitialDirectory="C:/Nordic_Semiconductor/nRF5_SDK_15.2.0_9412b96/examples/_too/nrf52-display-test/common/adafruit_touch_display" debugSearchPath="" autoConnectCapabilities="3199"/>
 </session>

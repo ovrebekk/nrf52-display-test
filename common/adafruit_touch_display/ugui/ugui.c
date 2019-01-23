@@ -4552,7 +4552,7 @@ __UG_FONT_DATA unsigned char font_32x53[256][212]={
    const UG_FONT FONT_32X53 = {(unsigned char*)font_32x53,FONT_TYPE_1BPP,32,53,0,255,NULL};
 #endif
 
-static UG_U16 m_assigned_index_text = 0, m_assigned_index_button = 0, m_assigned_index_image = 0;
+static UG_U16 m_assigned_index_text = 0, m_assigned_index_button = 0, m_assigned_index_image = 0, m_assigned_index_checkbox = 0;
 
 
 UG_S16 UG_Init(UG_GUI* g, UG_S16 x, UG_S16 y, const nrf_lcd_t *p_nrf_lcd)
@@ -7143,7 +7143,7 @@ void _UG_ButtonUpdate(UG_WINDOW* wnd, UG_OBJECT* obj)
 /* -------------------------------------------------------------------------------- */
 /* -- Checkbox FUNCTIONS                                                           -- */
 /* -------------------------------------------------------------------------------- */
-UG_RESULT UG_CheckboxCreate( UG_WINDOW* wnd, UG_CHECKBOX* chb, UG_U8 id, UG_S16 xs, UG_S16 ys, UG_S16 xe, UG_S16 ye )
+UG_RESULT UG_CheckboxCreate(UG_CHECKBOX* chb, UG_WINDOW* wnd, UG_S16 xs, UG_S16 ys, UG_S16 xe, UG_S16 ye)
 {
    UG_OBJECT* obj;
 
@@ -7160,6 +7160,8 @@ UG_RESULT UG_CheckboxCreate( UG_WINDOW* wnd, UG_CHECKBOX* chb, UG_U8 id, UG_S16 
    chb->align = ALIGN_TOP_LEFT;
    if (gui != NULL) chb->font = &gui->font;
    else chb->font = NULL;
+   chb->id = m_assigned_index_checkbox++;
+   chb->my_window = wnd;
    chb->str = "-";
    chb->checked = 0; 
 
@@ -7176,7 +7178,7 @@ UG_RESULT UG_CheckboxCreate( UG_WINDOW* wnd, UG_CHECKBOX* chb, UG_U8 id, UG_S16 
    obj->a_abs.ys = -1;
    obj->a_abs.xe = -1;
    obj->a_abs.ye = -1;
-   obj->id = id;
+   obj->id = chb->id;
    obj->state |= OBJ_STATE_VISIBLE | OBJ_STATE_REDRAW | OBJ_STATE_VALID | OBJ_STATE_TOUCH_ENABLE;
    obj->data = (void*)chb;
 
@@ -7186,16 +7188,16 @@ UG_RESULT UG_CheckboxCreate( UG_WINDOW* wnd, UG_CHECKBOX* chb, UG_U8 id, UG_S16 
    return UG_RESULT_OK;
 }
 
-UG_RESULT UG_CheckboxDelete( UG_WINDOW* wnd, UG_U8 id )
+UG_RESULT UG_CheckboxDelete(UG_CHECKBOX *btn)
 {
-   return _UG_DeleteObject( wnd, OBJ_TYPE_CHECKBOX, id );
+   return _UG_DeleteObject(btn->my_window, OBJ_TYPE_CHECKBOX, btn->id);
 }
 
-UG_RESULT UG_CheckboxShow( UG_WINDOW* wnd, UG_U8 id )
+UG_RESULT UG_CheckboxShow(UG_CHECKBOX *btn)
 {
    UG_OBJECT* obj=NULL;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_CHECKBOX, id );
+   obj = _UG_SearchObject(btn->my_window, OBJ_TYPE_CHECKBOX, btn->id);
    if ( obj == NULL ) return UG_RESULT_FAIL;
 
    obj->state |= OBJ_STATE_VISIBLE;
@@ -7204,15 +7206,12 @@ UG_RESULT UG_CheckboxShow( UG_WINDOW* wnd, UG_U8 id )
    return UG_RESULT_OK;
 }
 
-UG_RESULT UG_CheckboxHide( UG_WINDOW* wnd, UG_U8 id )
+UG_RESULT UG_CheckboxHide(UG_CHECKBOX *btn)
 {
    UG_OBJECT* obj=NULL;
-   UG_CHECKBOX* btn=NULL;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_CHECKBOX, id );
+   obj = _UG_SearchObject(btn->my_window, OBJ_TYPE_CHECKBOX, btn->id);
    if ( obj == NULL ) return UG_RESULT_FAIL;
-
-   btn = (UG_CHECKBOX*)(obj->data);
 
    btn->state &= ~CHB_STATE_PRESSED;
    obj->touch_state = OBJ_TOUCH_STATE_INIT;
@@ -7223,15 +7222,13 @@ UG_RESULT UG_CheckboxHide( UG_WINDOW* wnd, UG_U8 id )
    return UG_RESULT_OK;
 }
 
-UG_RESULT UG_CheckboxSetCheched( UG_WINDOW* wnd, UG_U8 id, UG_U8 ch )
+UG_RESULT UG_CheckboxSetCheched(UG_CHECKBOX *btn, UG_U8 ch )
 {
    UG_OBJECT* obj=NULL;
-   UG_CHECKBOX* btn=NULL;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_CHECKBOX, id );
+   obj = _UG_SearchObject(btn->my_window, OBJ_TYPE_CHECKBOX, btn->id);
    if ( obj == NULL ) return UG_RESULT_FAIL;
 
-   btn = (UG_CHECKBOX*)(obj->data);
    btn->checked = ch;
    obj->state |= OBJ_STATE_UPDATE | OBJ_STATE_REDRAW;
 
@@ -7239,102 +7236,90 @@ UG_RESULT UG_CheckboxSetCheched( UG_WINDOW* wnd, UG_U8 id, UG_U8 ch )
 }
 
 
-UG_RESULT UG_CheckboxSetForeColor( UG_WINDOW* wnd, UG_U8 id, UG_COLOR fc )
+UG_RESULT UG_CheckboxSetForeColor(UG_CHECKBOX *btn, UG_COLOR fc )
 {
    UG_OBJECT* obj=NULL;
-   UG_CHECKBOX* btn=NULL;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_CHECKBOX, id );
+   obj = _UG_SearchObject(btn->my_window, OBJ_TYPE_CHECKBOX, btn->id);
    if ( obj == NULL ) return UG_RESULT_FAIL;
 
-   btn = (UG_CHECKBOX*)(obj->data);
    btn->fc = fc;
    obj->state |= OBJ_STATE_UPDATE | OBJ_STATE_REDRAW;
 
    return UG_RESULT_OK;
 }
 
-UG_RESULT UG_CheckboxSetBackColor( UG_WINDOW* wnd, UG_U8 id, UG_COLOR bc )
+UG_RESULT UG_CheckboxSetBackColor(UG_CHECKBOX *btn, UG_COLOR bc )
 {
    UG_OBJECT* obj=NULL;
-   UG_CHECKBOX* btn=NULL;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_CHECKBOX, id );
+   obj = _UG_SearchObject(btn->my_window, OBJ_TYPE_CHECKBOX, btn->id);
    if ( obj == NULL ) return UG_RESULT_FAIL;
 
-   btn = (UG_CHECKBOX*)(obj->data);
    btn->bc = bc;
    obj->state |= OBJ_STATE_UPDATE | OBJ_STATE_REDRAW;
 
    return UG_RESULT_OK;
 }
 
-UG_RESULT UG_CheckboxSetAlternateForeColor( UG_WINDOW* wnd, UG_U8 id, UG_COLOR afc )
+UG_RESULT UG_CheckboxSetAlternateForeColor(UG_CHECKBOX *btn, UG_COLOR afc )
 {
    UG_OBJECT* obj=NULL;
-   UG_CHECKBOX* btn=NULL;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_CHECKBOX, id );
+   obj = _UG_SearchObject(btn->my_window, OBJ_TYPE_CHECKBOX, btn->id);
    if ( obj == NULL ) return UG_RESULT_FAIL;
 
-   btn = (UG_CHECKBOX*)(obj->data);
    btn->afc = afc;
    obj->state |= OBJ_STATE_UPDATE | OBJ_STATE_REDRAW;
 
    return UG_RESULT_OK;
 }
 
-UG_RESULT UG_CheckboxSetAlternateBackColor( UG_WINDOW* wnd, UG_U8 id, UG_COLOR abc )
+UG_RESULT UG_CheckboxSetAlternateBackColor(UG_CHECKBOX *btn, UG_COLOR abc )
 {
    UG_OBJECT* obj=NULL;
-   UG_CHECKBOX* btn=NULL;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_CHECKBOX, id );
+   obj = _UG_SearchObject(btn->my_window, OBJ_TYPE_CHECKBOX, btn->id);
    if ( obj == NULL ) return UG_RESULT_FAIL;
 
-   btn = (UG_CHECKBOX*)(obj->data);
    btn->abc = abc;
    obj->state |= OBJ_STATE_UPDATE | OBJ_STATE_REDRAW;
 
    return UG_RESULT_OK;
 }
 
-UG_RESULT UG_CheckboxSetText( UG_WINDOW* wnd, UG_U8 id, char* str )
+UG_RESULT UG_CheckboxSetText(UG_CHECKBOX *btn, char* str )
 {
    UG_OBJECT* obj=NULL;
-   UG_CHECKBOX* btn=NULL;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_CHECKBOX, id );
+   obj = _UG_SearchObject(btn->my_window, OBJ_TYPE_CHECKBOX, btn->id);
    if ( obj == NULL ) return UG_RESULT_FAIL;
 
-   btn = (UG_CHECKBOX*)(obj->data);
    btn->str = str;
    obj->state |= OBJ_STATE_UPDATE | OBJ_STATE_REDRAW;
 
    return UG_RESULT_OK;
 }
 
-UG_RESULT UG_CheckboxSetFont( UG_WINDOW* wnd, UG_U8 id, const UG_FONT* font )
+UG_RESULT UG_CheckboxSetFont(UG_CHECKBOX *btn, const UG_FONT* font )
 {
    UG_OBJECT* obj=NULL;
-   UG_CHECKBOX* btn=NULL;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_CHECKBOX, id );
+   obj = _UG_SearchObject(btn->my_window, OBJ_TYPE_CHECKBOX, btn->id);
    if ( obj == NULL ) return UG_RESULT_FAIL;
 
-   btn = (UG_CHECKBOX*)(obj->data);
    btn->font = font;
    obj->state |= OBJ_STATE_UPDATE | OBJ_STATE_REDRAW;
 
    return UG_RESULT_OK;
 }
 
-UG_RESULT UG_CheckboxSetStyle( UG_WINDOW* wnd, UG_U8 id, UG_U8 style )
+UG_RESULT UG_CheckboxSetStyle(UG_CHECKBOX *btn, UG_U8 style )
 {
    UG_OBJECT* obj=NULL;
    UG_CHECKBOX* chk=NULL;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_CHECKBOX, id );
+   obj = _UG_SearchObject(btn->my_window, OBJ_TYPE_CHECKBOX, btn->id);
    if ( obj == NULL ) return UG_RESULT_FAIL;
 
    chk = (UG_CHECKBOX*)(obj->data);
@@ -7377,211 +7362,183 @@ UG_RESULT UG_CheckboxSetStyle( UG_WINDOW* wnd, UG_U8 id, UG_U8 style )
    return UG_RESULT_OK;
 }
 
-UG_RESULT UG_CheckboxSetHSpace( UG_WINDOW* wnd, UG_U8 id, UG_S8 hs )
+UG_RESULT UG_CheckboxSetHSpace(UG_CHECKBOX *btn, UG_S8 hs )
 {
    UG_OBJECT* obj=NULL;
-   UG_CHECKBOX* btn=NULL;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_CHECKBOX, id );
+   obj = _UG_SearchObject(btn->my_window, OBJ_TYPE_CHECKBOX, btn->id);
    if ( obj == NULL ) return UG_RESULT_FAIL;
 
-   btn = (UG_CHECKBOX*)(obj->data);
    btn->h_space = hs;
    obj->state |= OBJ_STATE_UPDATE | OBJ_STATE_REDRAW;
 
    return UG_RESULT_OK;
 }
 
-UG_RESULT UG_CheckboxSetVSpace( UG_WINDOW* wnd, UG_U8 id, UG_S8 vs )
+UG_RESULT UG_CheckboxSetVSpace(UG_CHECKBOX *btn, UG_S8 vs )
 {
    UG_OBJECT* obj=NULL;
-   UG_CHECKBOX* btn=NULL;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_CHECKBOX, id );
+   obj = _UG_SearchObject(btn->my_window, OBJ_TYPE_CHECKBOX, btn->id);
    if ( obj == NULL ) return UG_RESULT_FAIL;
 
-   btn = (UG_CHECKBOX*)(obj->data);
    btn->v_space = vs;
    obj->state |= OBJ_STATE_UPDATE | OBJ_STATE_REDRAW;
 
    return UG_RESULT_OK;
 }
 
-UG_RESULT UG_CheckboxSetAlignment( UG_WINDOW* wnd, UG_U8 id, UG_U8 align )
+UG_RESULT UG_CheckboxSetAlignment(UG_CHECKBOX *btn, UG_U8 align )
 {
    UG_OBJECT* obj=NULL;
-   UG_CHECKBOX* btn=NULL;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_CHECKBOX, id );
+   obj = _UG_SearchObject(btn->my_window, OBJ_TYPE_CHECKBOX, btn->id);
    if ( obj == NULL ) return UG_RESULT_FAIL;
 
-   btn = (UG_CHECKBOX*)(obj->data);
    btn->align = align;
    obj->state |= OBJ_STATE_UPDATE | OBJ_STATE_REDRAW;
 
    return UG_RESULT_OK;
 }
 
-UG_U8 UG_CheckboxGetChecked( UG_WINDOW* wnd, UG_U8 id )
+UG_U8 UG_CheckboxGetChecked(UG_CHECKBOX *btn)
 {
    UG_OBJECT* obj=NULL;
-   UG_CHECKBOX* btn=NULL;
    UG_U8 c = 0;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_CHECKBOX, id );
+   obj = _UG_SearchObject(btn->my_window, OBJ_TYPE_CHECKBOX, btn->id);
    if ( obj != NULL )
    {
-      btn = (UG_CHECKBOX*)(obj->data);
       c = btn->checked;
    }
    return c;
 }
 
-UG_COLOR UG_CheckboxGetForeColor( UG_WINDOW* wnd, UG_U8 id )
+UG_COLOR UG_CheckboxGetForeColor(UG_CHECKBOX *btn)
 {
    UG_OBJECT* obj=NULL;
-   UG_CHECKBOX* btn=NULL;
    UG_COLOR c = C_BLACK;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_CHECKBOX, id );
+   obj = _UG_SearchObject(btn->my_window, OBJ_TYPE_CHECKBOX, btn->id);
    if ( obj != NULL )
    {
-      btn = (UG_CHECKBOX*)(obj->data);
       c = btn->fc;
    }
    return c;
 }
 
-UG_COLOR UG_CheckboxGetBackColor( UG_WINDOW* wnd, UG_U8 id )
+UG_COLOR UG_CheckboxGetBackColor(UG_CHECKBOX *btn)
 {
    UG_OBJECT* obj=NULL;
-   UG_CHECKBOX* btn=NULL;
    UG_COLOR c = C_BLACK;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_CHECKBOX, id );
+   obj = _UG_SearchObject(btn->my_window, OBJ_TYPE_CHECKBOX, btn->id);
    if ( obj != NULL )
    {
-      btn = (UG_CHECKBOX*)(obj->data);
       c = btn->bc;
    }
    return c;
 }
 
-UG_COLOR UG_CheckboxGetAlternateForeColor( UG_WINDOW* wnd, UG_U8 id )
+UG_COLOR UG_CheckboxGetAlternateForeColor(UG_CHECKBOX *btn)
 {
    UG_OBJECT* obj=NULL;
-   UG_CHECKBOX* btn=NULL;
    UG_COLOR c = C_BLACK;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_CHECKBOX, id );
+   obj = _UG_SearchObject(btn->my_window, OBJ_TYPE_CHECKBOX, btn->id);
    if ( obj != NULL )
    {
-      btn = (UG_CHECKBOX*)(obj->data);
       c = btn->afc;
    }
    return c;
 }
 
-UG_COLOR UG_CheckboxGetAlternateBackColor( UG_WINDOW* wnd, UG_U8 id )
+UG_COLOR UG_CheckboxGetAlternateBackColor(UG_CHECKBOX *btn)
 {
    UG_OBJECT* obj=NULL;
-   UG_CHECKBOX* btn=NULL;
    UG_COLOR c = C_BLACK;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_CHECKBOX, id );
+   obj = _UG_SearchObject(btn->my_window, OBJ_TYPE_CHECKBOX, btn->id);
    if ( obj != NULL )
    {
-      btn = (UG_CHECKBOX*)(obj->data);
       c = btn->abc;
    }
    return c;
 }
 
-char* UG_CheckboxGetText( UG_WINDOW* wnd, UG_U8 id )
+char* UG_CheckboxGetText(UG_CHECKBOX *btn)
 {
    UG_OBJECT* obj=NULL;
-   UG_CHECKBOX* btn=NULL;
    char* str = NULL;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_CHECKBOX, id );
+   obj = _UG_SearchObject(btn->my_window, OBJ_TYPE_CHECKBOX, btn->id);
    if ( obj != NULL )
    {
-      btn = (UG_CHECKBOX*)(obj->data);
       str = btn->str;
    }
    return str;
 }
 
-UG_FONT* UG_CheckboxGetFont( UG_WINDOW* wnd, UG_U8 id )
+UG_FONT* UG_CheckboxGetFont(UG_CHECKBOX *btn)
 {
    UG_OBJECT* obj=NULL;
-   UG_CHECKBOX* btn=NULL;
    UG_FONT* font = NULL;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_CHECKBOX, id );
+   obj = _UG_SearchObject(btn->my_window, OBJ_TYPE_CHECKBOX, btn->id);
    if ( obj != NULL )
    {
-      btn = (UG_CHECKBOX*)(obj->data);
       font = (UG_FONT*)btn->font;
    }
    return font;
 }
 
-UG_U8 UG_CheckboxGetStyle( UG_WINDOW* wnd, UG_U8 id )
+UG_U8 UG_CheckboxGetStyle(UG_CHECKBOX *btn)
 {
    UG_OBJECT* obj=NULL;
-   UG_CHECKBOX* btn=NULL;
    UG_U8 style = 0;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_CHECKBOX, id );
+   obj = _UG_SearchObject(btn->my_window, OBJ_TYPE_CHECKBOX, btn->id);
    if ( obj != NULL )
    {
-      btn = (UG_CHECKBOX*)(obj->data);
       style = btn->style;
    }
    return style;
 }
 
-UG_S8 UG_CheckboxGetHSpace( UG_WINDOW* wnd, UG_U8 id )
+UG_S8 UG_CheckboxGetHSpace(UG_CHECKBOX *btn)
 {
    UG_OBJECT* obj=NULL;
-   UG_CHECKBOX* btn=NULL;
    UG_S8 hs = 0;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_CHECKBOX, id );
+   obj = _UG_SearchObject(btn->my_window, OBJ_TYPE_CHECKBOX, btn->id);
    if ( obj != NULL )
    {
-      btn = (UG_CHECKBOX*)(obj->data);
       hs = btn->h_space;
    }
    return hs;
 }
 
-UG_S8 UG_CheckboxGetVSpace( UG_WINDOW* wnd, UG_U8 id )
+UG_S8 UG_CheckboxGetVSpace(UG_CHECKBOX *btn)
 {
    UG_OBJECT* obj=NULL;
-   UG_CHECKBOX* btn=NULL;
    UG_S8 vs = 0;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_CHECKBOX, id );
+   obj = _UG_SearchObject(btn->my_window, OBJ_TYPE_CHECKBOX, btn->id);
    if ( obj != NULL )
    {
-      btn = (UG_CHECKBOX*)(obj->data);
       vs = btn->v_space;
    }
    return vs;
 }
 
-UG_U8 UG_CheckboxGetAlignment( UG_WINDOW* wnd, UG_U8 id )
+UG_U8 UG_CheckboxGetAlignment(UG_CHECKBOX *btn)
 {
    UG_OBJECT* obj=NULL;
-   UG_CHECKBOX* btn=NULL;
    UG_U8 align = 0;
 
-   obj = _UG_SearchObject( wnd, OBJ_TYPE_CHECKBOX, id );
+   obj = _UG_SearchObject(btn->my_window, OBJ_TYPE_CHECKBOX, btn->id);
    if ( obj != NULL )
    {
-      btn = (UG_CHECKBOX*)(obj->data);
       align = btn->align;
    }
    return align;

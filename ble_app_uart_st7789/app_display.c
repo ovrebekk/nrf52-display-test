@@ -19,6 +19,7 @@ UG_TEXTBOX textbox_val_1;
 UG_TEXTBOX textbox_val_2;
 UG_BUTTON button_val_1;
 UG_BUTTON button_val_2;
+UG_CHECKBOX checkbox;
 UG_IMAGE  image_1;
 
 #define MAX_OBJECTS 20
@@ -78,6 +79,15 @@ void app_display_create_main_screen(app_display_content_t *content)
     UG_ButtonSetBackColor(&button_val_2, FILL_COLOR_BUTTON);  
     UG_ButtonSetFont(&button_val_2, &FONT_10X16);
 
+    UG_CheckboxCreate(&checkbox, &window_1, CBOX_X_LOCATION, CBOX_Y_LOCATION, CBOX_X_LOCATION + CBOX_WIDTH, CBOX_Y_LOCATION + CBOX_HEIGHT);
+    UG_CheckboxSetStyle(&checkbox, 0);
+    UG_CheckboxSetForeColor(&checkbox, FILL_COLOR_BUTTON);
+    UG_CheckboxSetBackColor(&checkbox, FILL_COLOR_TEXT);
+    UG_CheckboxSetText(&checkbox, " CBTest");
+    UG_CheckboxSetFont(&checkbox, &FONT_10X16);
+    UG_CheckboxSetCheched(&checkbox, 1);
+    
+
     UG_ImageCreate(&image_1, &window_1, 0, 128, 30, 150);
     UG_ImageSetBMP(&image_1, &bmp_nordicsemi);
 
@@ -88,24 +98,24 @@ void app_display_create_main_screen(app_display_content_t *content)
     UG_WindowShow(&window_1) ;
 }
 
-static char sprintf_buf[64];
-
 void app_display_update_main_screen(app_display_content_t *content)
 {
     static bool first_update = true;
-    static app_display_content_t prev_content;
-    if(first_update || prev_content.val_1 != content->val_1)
+
+    if(first_update || content_previous.val_1 != content->val_1)
     {
         static char val_1_string[16];
         sprintf(val_1_string, "%i.%i C", (content->val_1 / 10), (content->val_1 % 10));
         UG_ButtonSetText(&button_val_1, val_1_string);
     }
-    if(first_update || prev_content.val_2 != content->val_2)
+    if(first_update || content_previous.val_2 != content->val_2)
     {
         static char val_2_string[16];
         sprintf(val_2_string, "%i.%i V", (content->val_2 / 10), (content->val_2 % 10));
         UG_ButtonSetText(&button_val_2, val_2_string);
     }
+    content_previous = *content;
+    first_update = false;
 }
 
 void app_display_update(void)
